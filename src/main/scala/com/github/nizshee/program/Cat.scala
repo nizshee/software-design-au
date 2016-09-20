@@ -1,6 +1,5 @@
 package com.github.nizshee.program
 
-import java.io.FileNotFoundException
 
 import scala.io.Source
 

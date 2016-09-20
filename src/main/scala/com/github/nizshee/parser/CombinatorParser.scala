@@ -21,7 +21,7 @@ class CombinatorParser extends RegexParsers with Parser {
   def argument: Parser[Argument] = simple | simple1 | substitution | substitution1
   def arguments: Parser[List[Argument]] = rep(argument)
 
-  def simple: Parser[Argument.Simple] = """[\w\.\/]+""".r ^^ Argument.Simple
+  def simple: Parser[Argument.Simple] = """[\w\.\/-]+""".r ^^ Argument.Simple
   def simple1: Parser[Argument.Simple] = "'" ~ """[\w ]+""".r ~ "'" ^^ {
     case _ ~ text ~ _ => Argument.Simple(text)
   }

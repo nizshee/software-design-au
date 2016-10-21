@@ -9,9 +9,9 @@ import com.github.nizshee.program.Program
 
 import scala.sys.process._
 
-/** Class that parse and execute sequence of parameters.
+/** Class that parses and executes sequence of parameters.
   *
-  * @param parser the parser that will be use for parse
+  * @param parser the parser that will be used for parse
   * @param err the error stream
   * @param programs set of programs that class can execute
   */

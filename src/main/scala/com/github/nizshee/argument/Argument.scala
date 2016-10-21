@@ -8,7 +8,7 @@ sealed trait Argument {
   /** Return string that will be argument for command in interpreter.
     *
     * @param context the context that can be use to explore environment.
-    * @return string
+    * @return final string without variables.
     */
   def stringify(context: Context): String
 }

@@ -18,7 +18,9 @@ object Main {
         "wc" -> new Wc,
         "pwd" -> new Pwd,
         "exit" -> new Exit,
-        "grep" -> new Grep
+        "grep" -> new Grep,
+        "ls" -> new Ls,
+        "cd" -> new Cd
       )
     )
 

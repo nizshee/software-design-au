@@ -6,7 +6,7 @@ import org.scalatest.FlatSpec
 class GrepSpec extends FlatSpec {
 
   val grep = new Grep
-  val input = Stream("aA", "bB", "cC", "BB", "dD")
+  val input = Stream("aA", "bB", "cC", "BB", "dD", "w", "ww")
 
   "Grep" should "find lines with regex" in {
     assert(grep(List("b"))(input) == Stream("bB"))
@@ -23,5 +23,10 @@ class GrepSpec extends FlatSpec {
 
   it should "ignore case" in {
     assert(grep(List("b", "-i"))(input) == Stream("bB", "BB"))
+  }
+
+  it should "find words" in {
+    assert(grep(List("w"))(input) == Stream("w", "ww"))
+    assert(grep(List("w", "-w"))(input) == Stream("w"))
   }
 }

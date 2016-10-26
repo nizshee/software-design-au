@@ -3,6 +3,11 @@ package com.github.nizshee.program
 import scala.io.Source
 
 
+/** Find regex in input stream.
+  * Can find separate word.
+  * Can search case insensitive.
+  * Can return n follow lines after match.
+  */
 class Grep extends Program {
   import Grep._
 
@@ -10,7 +15,8 @@ class Grep extends Program {
     parser.parse(arguments, Config()) match {
       case Some(config) =>
         val in = config.filename.map(Source.fromFile(_).getLines.toStream).getOrElse(input)
-        val regex = if (config.caseSensitive) config.regex.r else ("(?i)" + config.regex).r
+        val regex1 = if (config.fullWorld) "\\b" + config.regex + "\\b" else config.regex
+        val regex = if (config.caseSensitive) regex1.r else ("(?i)" + regex1).r
         var linesLeft = 0
         in.filter(str => {
           if (regex.findFirstMatchIn(str).nonEmpty) {

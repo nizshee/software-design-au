@@ -8,7 +8,7 @@ import scala.util.parsing.combinator._
 /** Realization of Parser interface on Scala Parser Combinators */
 class CombinatorParser extends RegexParsers with Parser {
 
-  val validTokens = "\\w\\.\\/"
+  val validTokens = "\\w\\.\\/-"
 
   override def parse(line: String): Either[String, List[CommandAndArgs]] = parseAll(pipe, line) match {
     case Success(result, _) => Right(result)

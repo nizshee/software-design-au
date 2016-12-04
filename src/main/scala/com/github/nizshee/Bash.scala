@@ -58,7 +58,6 @@ class Bash(parser: Parser, err: java.io.OutputStream, programs: Map[String, Prog
         val bytes = input.mkString("\n").getBytes
         val inputStream = new ByteArrayInputStream(bytes)
         var out: Stream[String] = Stream()
-        println(command :: arguments)
         ((command :: arguments) #< inputStream) !
           ProcessLogger(txt => out = out :+ txt, txt => err.write(txt.getBytes))
         out

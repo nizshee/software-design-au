@@ -1,7 +1,7 @@
 package com.github.nizshee.program
 
 import java.io.{File, FileNotFoundException}
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 
 /**
   * Class representing UNIX ls command
@@ -15,13 +15,15 @@ class Ls extends Program {
     * @return list of files and subdirectories in specified directories
     */
   override def apply(arguments: List[String])(input: Stream[String]): Stream[String] = {
-    if (arguments.isEmpty) new File(".").listFiles.map(_.getPath).toStream
-    val printSourceDir = if (arguments.size == 1) false else true
-    arguments.flatMap(listDir(_, printSourceDir)).toStream
+    if (arguments.isEmpty) getCurrentDir.toFile.listFiles.map(_.getName).toStream
+    else {
+      val printSourceDir = arguments.size != 1
+      arguments.flatMap(listDir(_, printSourceDir)).toStream
+    }
   }
 
   private def listDir(path: String, printSourceDir: Boolean): Stream[String] = {
-    val currentDir = Paths.get(System.getProperty("user.dir"))
+    val currentDir = getCurrentDir
     val dir = currentDir.relativize(Paths.get(path)).toFile
     if (!dir.exists) {
       throw new FileNotFoundException(s"$path : directory doesn't exist")
@@ -33,4 +35,7 @@ class Ls extends Program {
     val result = if (printSourceDir) Stream(s"${dir.toString}:") else Stream.empty
     result ++ dir.listFiles.map(_.getName).toStream
   }
+
+  private def getCurrentDir: Path =
+    Paths.get(System.getProperty("user.dir"))
 }

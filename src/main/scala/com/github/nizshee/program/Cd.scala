@@ -17,7 +17,8 @@ class Cd extends Program {
   override def apply(arguments: List[String])(input: Stream[String]): Stream[String] = {
     val dir = if (arguments.isEmpty) System.getProperty("user.home")
               else getCurrentDir.resolve(Paths.get(arguments.head)).normalize.toAbsolutePath.toString
-    if (!new File(dir).exists()) {
+    val dirf = new File(dir)
+    if (!dirf.exists || !dirf.isDirectory) {
       throw new FileNotFoundException(s"$dir: directory doesn't exist")
     }
     System.setProperty("user.dir", dir)

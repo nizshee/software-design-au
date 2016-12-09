@@ -3,6 +3,7 @@ package com.github.nizshee
 import java.io.{DataInputStream, DataOutputStream}
 import java.net.{InetAddress, Socket}
 
+import com.typesafe.scalalogging.Logger
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
@@ -14,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Implementation of Api.
   */
-object JsonApi extends Api {
+class JsonApi(implicit logger: Logger) extends Api {
 
   implicit val formats = DefaultFormats
 
@@ -40,6 +41,7 @@ object JsonApi extends Api {
   )
 
   private def send[T](host: String, port: Int, jValue: JValue, f: JValue => T): Future[T] = Future {
+    logger.debug(s"send request: $jValue")
     val socket = new Socket(InetAddress.getByName(host), port)
     try {
       new DataOutputStream(socket.getOutputStream()).writeUTF(compact(jValue))

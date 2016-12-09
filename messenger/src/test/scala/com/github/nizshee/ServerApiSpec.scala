@@ -2,12 +2,15 @@ package com.github.nizshee
 
 import java.net.InetAddress
 
+import com.typesafe.scalalogging.Logger
 import org.scalatest._
 
 import scala.concurrent.duration._
 import scala.concurrent.Await
 
 class ServerApiSpec extends FlatSpec with BeforeAndAfterAll with Matchers {
+  implicit val logger = Logger("test")
+
   val serverHost = "localhost"
   val serverPort = 12345
   val apiHost = "localhost"
@@ -34,6 +37,7 @@ class ServerApiSpec extends FlatSpec with BeforeAndAfterAll with Matchers {
   }
 
   val server = new JsonServer(InetAddress.getByName(serverHost), serverPort, state, modState)
+  val api = new JsonApi
 
   override protected def beforeAll(): Unit = {
     server.start()
@@ -44,20 +48,20 @@ class ServerApiSpec extends FlatSpec with BeforeAndAfterAll with Matchers {
   }
 
   "ServerApi" should "check name" in {
-    val future = JsonApi.getName(serverHost, serverPort)
+    val future = api.getName(serverHost, serverPort)
     val result = Await.result(future, 5.second)
     result should be (localName)
   }
 
   it should "check status" in {
-    val future = JsonApi.getStatus(serverHost, serverPort)
+    val future = api.getStatus(serverHost, serverPort)
     val result = Await.result(future, 5.second)
     result should be (localStatus)
   }
 
   it should "send messages" in {
     val msg = "cjdsnvcjs"
-    val future = JsonApi.sendMessage(serverHost, serverPort, remoteName, msg)
+    val future = api.sendMessage(serverHost, serverPort, remoteName, msg)
     val result = Await.result(future, 5.second)
     result should be (())
     state.history should be (Message.Remote(msg) +: history)

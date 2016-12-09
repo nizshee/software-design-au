@@ -1,11 +1,13 @@
 package com.github.nizshee
 
+import com.typesafe.scalalogging.Logger
 import org.scalatest._
 
 import scala.concurrent.Future
 
 
 class ChatSpec extends FlatSpec with Matchers {
+  implicit val logger = Logger("test")
 
   var modState: (=> State => State) => Unit = _
   var state: () => State = _

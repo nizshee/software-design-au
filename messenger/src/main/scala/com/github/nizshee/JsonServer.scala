@@ -1,8 +1,9 @@
 package com.github.nizshee
 
 import java.io.{DataInputStream, DataOutputStream}
-import java.net.{InetAddress, ServerSocket, Socket}
+import java.net.{InetAddress, ServerSocket, Socket, SocketException}
 
+import com.typesafe.scalalogging.Logger
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import org.json4s.JsonDSL._
@@ -11,7 +12,7 @@ import org.json4s.JsonDSL._
 /**
   * Implementation of Server.
   */
-class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (=> State => State) => Unit)
+class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (=> State => State) => Unit)(implicit logger: Logger)
   extends Server {
 
   private var serverSocket: ServerSocket = _
@@ -26,12 +27,15 @@ class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (
         try {
           while (true) {
             val socket = serverSocket.accept()
+            logger.debug("handle request")
             handle(socket)
           }
         } catch {
-          case e: Exception =>
+          case e: SocketException if e.getMessage == "Socket closed" =>
+          case e: Exception => logger.error("server", e)
         }
       ).start()
+      logger.debug("server started")
     }
   }
 
@@ -43,6 +47,7 @@ class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (
         isRunning = false
       }
     }
+    logger.debug("server stopped")
   }
 
   private def handle(socket: Socket) = {
@@ -51,6 +56,7 @@ class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (
       val t = dis.readUTF()
       val j = parse(t)
 
+      logger.debug(s"message: $t")
       val response: JValue = (j \ "type").extract[String] match {
         case "getStatus" => "status" -> state.localUser.status
         case "getName" => "name" -> state.localUser.name
@@ -65,7 +71,7 @@ class JsonServer(interface: InetAddress, port: Int, state: => State, modState: (
       }
       new DataOutputStream(socket.getOutputStream()).writeUTF(compact(response))
     } catch {
-      case e: Exception => e.printStackTrace()
+      case e: Exception => logger.warn("handle request", e)
     } finally {
       socket.close()
     }

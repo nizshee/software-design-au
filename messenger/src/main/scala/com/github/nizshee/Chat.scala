@@ -1,5 +1,7 @@
 package com.github.nizshee
 
+import com.typesafe.scalalogging.Logger
+
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -9,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
   * @param mkServer Fabric method for Server handling request.
   * @param api Api for making request.
   */
-class Chat(mkServer: (=> State, (=> State => State) => Unit) => Server, api: Api) {
+class Chat(mkServer: (=> State, (=> State => State) => Unit) => Server, api: Api)(implicit logger: Logger) {
 
   @volatile private var state: State = State.empty
   @volatile private var callbacks: Seq[State => Unit] = Seq()
@@ -21,18 +23,31 @@ class Chat(mkServer: (=> State, (=> State => State) => Unit) => Server, api: Api
 
   def stop() = server.stop()
 
-  def updateName(name: String) = modState(s => s.copy(localUser = s.localUser.copy(name = name)))
+  def updateName(name: String) = {
+    logger.debug(s"update name: $name")
+    modState(s => s.copy(localUser = s.localUser.copy(name = name)))
+  }
 
-  def updateStatus(status: String) = modState(s => s.copy(localUser = s.localUser.copy(status = status)))
+  def updateStatus(status: String) = {
+    logger.debug(s"update status: $status")
+    modState(s => s.copy(localUser = s.localUser.copy(status = status)))
+  }
 
-  def updateHost(host: String) = modState(_.copy(targetHost = host, history = Seq(), remoteUser = User.empty))
+  def updateHost(host: String) = {
+    logger.debug(s"update host: $host")
+    modState(_.copy(targetHost = host, history = Seq(), remoteUser = User.empty))
+  }
 
-  def updatePort(port: String) =
+  def updatePort(port: String) = {
+    logger.debug(s"update port: $port")
     try {
       modState(_.copy(targetPort = port.toInt, history = Seq(), remoteUser = User.empty))
     } catch {
-      case e: Exception => modState(_.copy(history = Seq(Message.System(s"${e.getMessage}"))))
+      case e: Exception =>
+        logger.warn("update port", e)
+        modState(_.copy(history = Seq(Message.System(s"${e.getMessage}"))))
     }
+  }
 
   def updateTarget() = {
     val user = for {

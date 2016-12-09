@@ -10,6 +10,9 @@ import scalafx.scene.text.Text
 import scalafx.Includes._
 
 
+/**
+  * User interface maker.
+  */
 object UI {
 
   def apply(stage: PrimaryStage)(chat: Chat) = {

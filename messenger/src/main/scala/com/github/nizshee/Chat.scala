@@ -1,20 +1,25 @@
 package com.github.nizshee
 
-import java.net.InetAddress
-
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class Chat(interface: InetAddress, port: Int) {
-  private var state: State = State.empty
+
+/**
+  * Class for state modification. It should be used in user interfaces.
+  * @param mkServer Fabric method for Server handling request.
+  * @param api Api for making request.
+  */
+class Chat(mkServer: (=> State, (=> State => State) => Unit) => Server, api: Api) {
+
+  @volatile private var state: State = State.empty
   @volatile private var callbacks: Seq[State => Unit] = Seq()
-  val tinyServer = new TinyServer(interface, port, state, modState)
+  val server = mkServer(state, modState)
 
   def registerCallback(callback: State => Unit) = this.synchronized { callbacks :+= callback; callback(state) }
 
-  def start() = tinyServer.start()
+  def start() = server.start()
 
-  def stop() = tinyServer.stop()
+  def stop() = server.stop()
 
   def updateName(name: String) = modState(s => s.copy(localUser = s.localUser.copy(name = name)))
 
@@ -31,8 +36,8 @@ class Chat(interface: InetAddress, port: Int) {
 
   def updateTarget() = {
     val user = for {
-      name <- Api.getName(state.targetHost, state.targetPort)
-      status <- Api.getStatus(state.targetHost, state.targetPort)
+      name <- api.getName(state.targetHost, state.targetPort)
+      status <- api.getStatus(state.targetHost, state.targetPort)
     } yield {
       User(name, status)
     }
@@ -45,12 +50,14 @@ class Chat(interface: InetAddress, port: Int) {
   }
 
   def sendMessage(msg: String) = {
-    val message = Api.sendMessage(state.targetHost, state.targetPort, state.localUser.name, msg)
+    val message = api.sendMessage(state.targetHost, state.targetPort, state.localUser.name, msg)
      message.onComplete {
       case Failure(e) => modState(s => s.copy(history = Message.System(e.getMessage) +: s.history))
       case Success(e) => modState(s => s.copy(history = Message.Local(msg)  +: s.history))
     }
   }
+
+  def getState = state
 
   private def modState(f: => State => State) = {
     this.synchronized {

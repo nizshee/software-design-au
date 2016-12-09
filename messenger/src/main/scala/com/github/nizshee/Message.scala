@@ -1,9 +1,10 @@
 package com.github.nizshee
 
 
-sealed trait Message {
-
-}
+/**
+  * Class for message store.
+  */
+sealed trait Message
 
 object Message {
   final case class Local(msg: String) extends Message

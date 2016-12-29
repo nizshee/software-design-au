@@ -17,7 +17,8 @@ object Main {
         "cat" -> new Cat,
         "wc" -> new Wc,
         "pwd" -> new Pwd,
-        "exit" -> new Exit
+        "exit" -> new Exit,
+        "grep" -> new Grep
       )
     )
 
